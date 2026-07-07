@@ -13,11 +13,15 @@ IMAGE_NAME="klaus"
 # The base dir holds modules, apt-packages AND claude's config — remove it all.
 CONFIG_DIR="${KLAUS_DIR:-$HOME/.klaus}"
 
-# 1. remove the rc block (between the klaus markers).
+# 1. remove the rc blocks (klaus source line + the optional claude-guard).
 for RC_FILE in "$HOME/.zshrc" "$HOME/.bashrc"; do
-    if [ -f "$RC_FILE" ] && grep -qF "# >>> klaus >>>" "$RC_FILE"; then
-        echo "==> removing klaus block from $RC_FILE"
-        sed -i.klaus-bak '/# >>> klaus >>>/,/# <<< klaus <<</d' "$RC_FILE"
+    [ -f "$RC_FILE" ] || continue
+    if grep -qF "# >>> klaus" "$RC_FILE"; then
+        echo "==> removing klaus blocks from $RC_FILE"
+        sed -i.klaus-bak \
+            -e '/# >>> klaus claude-guard >>>/,/# <<< klaus claude-guard <<</d' \
+            -e '/# >>> klaus >>>/,/# <<< klaus <<</d' \
+            "$RC_FILE"
     fi
 done
 

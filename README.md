@@ -9,7 +9,7 @@ exceptions per run — extra hosts (`KLAUS_HOSTS`) or extra mounted paths
 ## Requirements
 
 Docker, installed and running (Docker Desktop on macOS/Windows, Docker Engine
-on Linux).
+on Linux). On macOS, also `coreutils` for `timeout` (`brew install coreutils`) and`newt` for a nicer setup menu (`brew install newt`).
 
 ## Install
 
@@ -20,7 +20,10 @@ cd klaus
 ```
 
 `setup.sh` lets you pick toolchains, builds the image, and wires up your shell.
-Open a new shell afterwards (or `source ~/.zshrc` / `~/.bashrc`).
+It also offers to guard the bare `claude` command — so typing `claude` asks
+whether you want sandboxed klaus or the original, avoiding an un-sandboxed run
+out of habit (`command claude` always bypasses it). Open a new shell afterwards
+(or `source ~/.zshrc` / `~/.bashrc`).
 
 ## First run
 

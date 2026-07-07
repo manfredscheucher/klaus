@@ -59,6 +59,23 @@ SAVED_MODULES=" "
 [ -f "$MODULES_FILE" ] && SAVED_MODULES=" $(tr '\n' ' ' < "$MODULES_FILE") "
 _is_saved() { case "$SAVED_MODULES" in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
 
+# whiptail checkbox dialog (nicer, but not installed by default on macOS —
+# `brew install newt`). Selected module names go to stdout. Falls back to the
+# numbered menu below when whiptail is absent.
+select_whiptail() {
+    local args=() on
+    for i in "${!ALL_MODULES[@]}"; do
+        on="OFF"; _is_saved "${ALL_MODULES[$i]}" && on="ON"
+        args+=("${ALL_MODULES[$i]}" "$(module_desc "${ALL_MODULES[$i]}")" "$on")
+    done
+    # whiptail prints the chosen tags (quoted) on fd 3; strip the quotes.
+    local raw
+    raw="$(whiptail --title "klaus — select toolchains" \
+        --checklist "Space to toggle, Enter to confirm (claude is always included)." \
+        18 76 "${#ALL_MODULES[@]}" "${args[@]}" 3>&1 1>&2 2>&3)" || return 1
+    eval "printf '%s ' $raw"
+}
+
 # Simple numbered checkbox menu: type a number to toggle, Enter to confirm.
 # Works on any shell, no raw-terminal handling. Selected names go to stdout;
 # the menu is drawn to stderr so stdout stays clean for the caller.
@@ -92,7 +109,11 @@ if [ -n "$PRESELECT" ]; then
 elif [ "$REBUILD" = "1" ]; then
     SELECTED=()   # rebuild requested but nothing saved: just claude
 elif [ -t 0 ] && [ -t 2 ]; then
-    read -ra SELECTED <<< "$(select_menu)"
+    if command -v whiptail >/dev/null 2>&1; then
+        read -ra SELECTED <<< "$(select_whiptail)"
+    else
+        read -ra SELECTED <<< "$(select_menu)"
+    fi
 else
     echo "ERROR: no interactive terminal for the menu." >&2
     echo "       Pick modules non-interactively, e.g. ./setup.sh --with python,kmp" >&2
@@ -112,8 +133,12 @@ mkdir -p "$(dirname "$MODULES_FILE")"
 if ! command -v docker >/dev/null 2>&1; then
     echo "ERROR: docker not found on PATH. Install Docker first." >&2; exit 1
 fi
-if ! docker info >/dev/null 2>&1; then
-    echo "ERROR: docker daemon not reachable. Start Docker and re-run." >&2; exit 1
+# Timeout the check — a dead daemon makes `docker info` hang forever otherwise.
+# (macOS: needs coreutils' `timeout`, e.g. `brew install coreutils`.)
+if ! timeout 10 docker info >/dev/null 2>&1; then
+    echo "ERROR: Docker isn't responding. Start Docker Desktop (wait until it's" >&2
+    echo "       running), then re-run ./setup.sh." >&2
+    exit 1
 fi
 
 # Persistent apt package list (~/.klaus/apt-packages, one package per line) is
@@ -157,6 +182,38 @@ if grep -qF "$MARKER" "$RC_FILE" 2>/dev/null; then
 else
     echo "==> adding klaus to $RC_FILE"
     { echo ""; echo "$MARKER"; echo "$SOURCE_LINE"; echo "# <<< klaus <<<"; } >> "$RC_FILE"
+fi
+
+# --- optional: guard the bare `claude` command ------------------------------
+# Offer to shadow `claude` so typing it forces an explicit choice between the
+# sandboxed klaus and the original claude — avoids launching un-sandboxed by
+# habit. Its own marker block so uninstall.sh can remove it too.
+GUARD_MARKER="# >>> klaus claude-guard >>>"
+if grep -qF "$GUARD_MARKER" "$RC_FILE" 2>/dev/null; then
+    : # already installed
+elif [ -t 0 ]; then
+    echo ""
+    printf "Guard the bare 'claude' command (ask klaus-vs-original each time)? [y/N] "
+    read -r _g
+    if [ "$_g" = "y" ] || [ "$_g" = "Y" ]; then
+        cat >> "$RC_FILE" <<'GUARD'
+
+# >>> klaus claude-guard >>>
+# Typing `claude` forces an explicit choice, so you don't run the
+# un-sandboxed original out of habit. `command claude` still bypasses this.
+claude() {
+    printf 'Which claude?  [k] sandboxed klaus   [o] original claude  > '
+    read -r _ans
+    case "$_ans" in
+        k|K) klaus "$@" ;;
+        o|O) command claude "$@" ;;
+        *)   echo "cancelled — type 'k' for klaus or 'o' for original." >&2; return 1 ;;
+    esac
+}
+# <<< klaus claude-guard <<<
+GUARD
+        echo "==> added claude-guard to $RC_FILE"
+    fi
 fi
 
 echo ""
