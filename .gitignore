@@ -1,0 +1,6 @@
+# Nothing runtime-generated lives in the repo; config/data go to $HOME/.klaus
+# and a named Docker volume. This file is here so the repo stays clean.
+.DS_Store
+
+# Claude Code's per-session working state (permissions etc.) — not project content.
+.claude/

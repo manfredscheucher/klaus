@@ -1,0 +1,9 @@
+# DESC: Python 3 + venv + pip (SAT/math scripts, tooling)
+# HOSTS:
+# Pure apt install. Creating venvs and installing wheels at *runtime* would
+# need PyPI (files.pythonhosted.org, pypi.org) — allow those ad-hoc when needed:
+#   KLAUS_HOSTS="pypi.org files.pythonhosted.org" klaus
+install_module() {
+    apt-get install -y --no-install-recommends \
+        python3 python3-venv python3-pip python3-dev
+}
