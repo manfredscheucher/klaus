@@ -35,7 +35,6 @@ ENV HOME=/home/klaus
 # extra apt packages as build args. Each module's install_module() runs as root.
 ARG KLAUS_MODULES=""
 ARG KLAUS_APT=""
-ARG KLAUS_ANDROID=""
 
 # Build context is the repo root (so modules/ is visible); the Dockerfile and
 # the image scripts live under image/.
@@ -43,7 +42,6 @@ COPY modules/ /opt/klaus-modules/
 COPY image/build-install-modules.sh /usr/local/bin/build-install-modules.sh
 RUN chmod +x /usr/local/bin/build-install-modules.sh \
     && KLAUS_MODULES="$KLAUS_MODULES" KLAUS_APT="$KLAUS_APT" \
-       KLAUS_ANDROID="$KLAUS_ANDROID" \
        /usr/local/bin/build-install-modules.sh \
     && rm -rf /var/lib/apt/lists/*
 

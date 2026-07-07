@@ -41,8 +41,8 @@ all klaus instances: the login, config, skills and the like persist there.
 cd ~/any/project
 klaus                                   # Claude Code, scoped to this directory
 klaus --resume                          # any claude flag/arg passes through
-klaus --shell                           # a shell in the container, not claude
-klaus --install cmake                   # add apt package(s) to the image, rebuild
+klaus ---shell                           # a shell in the container, not claude
+klaus ---install cmake                   # add apt package(s) to the image, rebuild
 KLAUS_MOUNT=/host/lib:/workspace/lib klaus   # mount a path outside the project
 ```
 
@@ -67,12 +67,12 @@ The image is minimal by default. Languages and build tools are opt-in modules
 you tick during setup:
 
 - **python** — Python 3 + pip/venv
-- **kmp** — Kotlin Multiplatform / Gradle (`KLAUS_ANDROID=1` adds the Android SDK)
+- **kmp** — Kotlin Multiplatform / Gradle (JDK + Gradle)
 
 For extra system (apt) packages, add them to the image and rebuild:
 
 ```bash
-klaus --install build-essential cmake   # appends to the list, then rebuilds
+klaus ---install build-essential cmake   # appends to the list, then rebuilds
 ```
 
 This triggers an image rebuild, so it takes longer than a plain `apt install`

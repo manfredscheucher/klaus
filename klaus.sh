@@ -4,8 +4,8 @@
 #
 # Usage:
 #   klaus [claude args...]        run Claude Code in this directory
-#   klaus --shell                 open a shell in the container instead of claude
-#   klaus --install <pkg>...      add apt package(s) to the image, then rebuild
+#   klaus ---shell                 open a shell in the container instead of claude
+#   klaus ---install <pkg>...      add apt package(s) to the image, then rebuild
 #
 # Optional env vars (all per-run):
 #   KLAUS_HOSTS="host1 host2"                 extra firewall hosts to allow
@@ -21,17 +21,17 @@ elif [ -n "${(%):-%x}" ] 2>/dev/null; then
 fi
 
 klaus() {
-    # klaus --install <pkg>...  — add apt package(s) to the image and rebuild.
+    # klaus ---install <pkg>...  — add apt package(s) to the image and rebuild.
     # Does NOT start a container.
-    if [ "${1:-}" = "--install" ]; then
+    if [ "${1:-}" = "---install" ]; then
         shift
         _klaus_install "$@"
         return $?
     fi
 
-    # klaus --shell — open a shell in the container instead of launching claude.
+    # klaus ---shell — open a shell in the container instead of launching claude.
     local shell_env=()
-    if [ "${1:-}" = "--shell" ]; then
+    if [ "${1:-}" = "---shell" ]; then
         shift
         shell_env=(-e "KLAUS_SHELL=1")
     fi
@@ -99,7 +99,7 @@ klaus() {
 # (~/.klaus/apt-packages) is the source of truth — edit it by hand to remove.
 _klaus_install() {
     if [ $# -eq 0 ]; then
-        echo "usage: klaus --install <apt-package>..." >&2
+        echo "usage: klaus ---install <apt-package>..." >&2
         return 1
     fi
     local dir="${KLAUS_DIR:-$HOME/.klaus}"

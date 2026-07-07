@@ -1,23 +1,9 @@
-# DESC: Kotlin Multiplatform / Gradle (JDK + Gradle; Android SDK optional)
-# HOSTS: services.gradle.org repo.maven.apache.org plugins.gradle.org dl.google.com repo1.maven.org jcenter.bintray.com
+# DESC: Kotlin Multiplatform / Gradle (JDK + Gradle)
+# HOSTS: services.gradle.org repo.maven.apache.org plugins.gradle.org repo1.maven.org
 # The JDK comes from apt. Gradle itself is downloaded per-project by the
-# ./gradlew wrapper, and KMP/Android builds pull dependencies from Maven Central,
-# the Gradle plugin portal and Google's Maven repo — hence the firewall hosts.
-#
-# Android SDK is NOT installed by default (large, ~JDK+several GB). Set
-# KLAUS_ANDROID=1 at setup to add the command-line tools; you still accept
-# licenses and install platform packages per project.
+# ./gradlew wrapper, and KMP builds pull dependencies from Maven Central and the
+# Gradle plugin portal — hence the firewall hosts. Builds the JVM/desktop
+# targets; Android builds need the SDK, which isn't installed here.
 install_module() {
     apt-get install -y --no-install-recommends openjdk-21-jdk-headless ca-certificates curl unzip
-    if [ "${KLAUS_ANDROID:-0}" = "1" ]; then
-        local sdk_root="/opt/android-sdk"
-        mkdir -p "$sdk_root/cmdline-tools"
-        curl -fsSL "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" \
-            -o /tmp/cmdtools.zip
-        unzip -q /tmp/cmdtools.zip -d "$sdk_root/cmdline-tools"
-        mv "$sdk_root/cmdline-tools/cmdline-tools" "$sdk_root/cmdline-tools/latest"
-        rm /tmp/cmdtools.zip
-        echo "export ANDROID_HOME=$sdk_root"      >> /etc/profile.d/android.sh
-        echo "export ANDROID_SDK_ROOT=$sdk_root"  >> /etc/profile.d/android.sh
-    fi
 }

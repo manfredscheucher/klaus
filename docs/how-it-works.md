@@ -94,7 +94,7 @@ cached locations above, or into the mounted project directory (a `./.venv`,
 the container's filesystem are lost.
 
 **System (apt) packages** are the exception — they belong in the image, not the
-running container. Add them with `klaus --install <pkg>...`, which appends to
+running container. Add them with `klaus ---install <pkg>...`, which appends to
 `~/.klaus/apt-packages` and rebuilds. `setup.sh --rebuild` rebuilds from the
 saved module + apt lists without re-asking.
 
@@ -111,7 +111,6 @@ Set at **setup** time (`./setup.sh`), baked into the image:
 | Variable        | Effect                                                       |
 |-----------------|--------------------------------------------------------------|
 | `KLAUS_APT`     | Extra apt packages to install (e.g. `"build-essential cmake"`) |
-| `KLAUS_ANDROID` | `1` adds the Android SDK to the `kmp` module                 |
 
 Set at **run** time (`klaus`), per invocation:
 
@@ -124,8 +123,8 @@ Set at **run** time (`klaus`), per invocation:
 
 Most arguments to `klaus` pass straight through to `claude`
 (`klaus --resume`, `klaus --dangerously-skip-permissions`, …). The exceptions
-are klaus's own subcommands: `klaus --shell` (a shell in the container instead
-of claude) and `klaus --install <pkg>...` (add apt packages + rebuild, no
+are klaus's own subcommands: `klaus ---shell` (a shell in the container instead
+of claude) and `klaus ---install <pkg>...` (add apt packages + rebuild, no
 container).
 
 ## Repository layout

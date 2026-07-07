@@ -7,7 +7,7 @@ unless selected. `claude` is mandatory (it's the CLI) and always included.
 |----------|--------------------------------|-------|
 | `claude` | Claude Code CLI + Node runtime | always included; not in the menu |
 | `python` | python3 + venv + pip           | apt only |
-| `kmp`    | JDK + Gradle                   | opens Gradle/Maven/Google in the firewall; `KLAUS_ANDROID=1` adds the Android SDK |
+| `kmp`    | JDK + Gradle                   | opens Gradle/Maven in the firewall |
 
 A toolchain only needs a module here if it requires firewall hosts or
 non-trivial install steps. Pure-apt tooling (e.g. a C++ toolchain) goes through

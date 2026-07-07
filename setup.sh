@@ -28,7 +28,7 @@ done
 module_desc() { grep -m1 '^# DESC:' "$MOD_DIR/$1.module" | sed 's/^# DESC:[[:space:]]*//'; }
 
 # The chosen module list is remembered here so rebuilds (./setup.sh --rebuild,
-# or `klaus --install`) keep the same toolchains without asking again.
+# or `klaus ---install`) keep the same toolchains without asking again.
 # KLAUS_DIR is the klaus base dir (distinct from KLAUS_CONFIG_DIR, claude's own).
 KLAUS_DIR="${KLAUS_DIR:-$HOME/.klaus}"
 MODULES_FILE="$KLAUS_DIR/modules"
@@ -118,7 +118,7 @@ fi
 
 # Persistent apt package list (~/.klaus/apt-packages, one package per line) is
 # baked in on every build, on top of any KLAUS_APT given for this run. Managed
-# with `klaus --install` (see klaus.sh).
+# with `klaus ---install` (see klaus.sh).
 APT_LIST_FILE="$KLAUS_DIR/apt-packages"
 APT_FROM_LIST=""
 [ -f "$APT_LIST_FILE" ] && APT_FROM_LIST="$(grep -vE '^\s*(#|$)' "$APT_LIST_FILE" | tr '\n' ' ')"
@@ -129,19 +129,19 @@ echo "==> building image '$IMAGE_NAME' ..."
 docker build \
     --build-arg KLAUS_MODULES="$MODULES" \
     --build-arg KLAUS_APT="$APT_ALL" \
-    --build-arg KLAUS_ANDROID="${KLAUS_ANDROID:-}" \
     -f "$REPO_DIR/image/Dockerfile" \
     -t "$IMAGE_NAME" "$REPO_DIR"
 
 # --- auth awareness ---------------------------------------------------------
-# klaus passes a key/token through automatically if one is in your environment.
-# Just make the user aware of which auth they'll get, don't store anything.
+# Just tell the user which auth klaus will use; don't store anything.
 if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
-    echo "==> found ANTHROPIC_API_KEY in your environment — klaus will use it automatically."
+    echo "==> found ANTHROPIC_API_KEY in your environment — klaus will use it."
 elif [ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then
-    echo "==> found CLAUDE_CODE_OAUTH_TOKEN in your environment — klaus will use it automatically."
+    echo "==> found CLAUDE_CODE_OAUTH_TOKEN in your environment — klaus will use it."
+elif [ -f "${KLAUS_CONFIG_DIR:-$KLAUS_DIR/.claude}/.credentials.json" ]; then
+    echo "==> already logged in (${KLAUS_CONFIG_DIR:-$KLAUS_DIR/.claude}) — no login needed."
 else
-    echo "==> no API key/token in your environment — the first 'klaus' will run /login."
+    echo "==> no login yet — the first 'klaus' will run /login."
 fi
 
 # --- wire up the shell function ---------------------------------------------
